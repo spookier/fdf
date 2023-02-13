@@ -96,7 +96,7 @@ void fill_tab(int **tab, int size_x, int size_y)
 		j = 0;
 		while(j < size_y)
 		{
-			tab[i][j] = 0;
+			tab[i][j] = rand() % 10;
 			j++;
 		}
 		i++;
@@ -231,7 +231,6 @@ void	put_rect(t_data *data, t_v2i start, t_v2i dim, int color)
 // }
 
 
-
 void draw_grid(t_data *img, int **map, t_v2i pos, int space, double scale)
 {
 	int i;
@@ -240,8 +239,8 @@ void draw_grid(t_data *img, int **map, t_v2i pos, int space, double scale)
 	i = 0;
 	tmp = space;
 	space = 0;
-	double rad_30 = 30 * M_PI / 180;
-	double rad_45 = 45 * M_PI / 180;
+	double rad_30 = 55 * M_PI / 180;
+	double rad_45 = 75 * M_PI / 180;
 
 	// DRAW COLUMNS
 	while (i < SIZE_X)
@@ -282,72 +281,6 @@ void draw_grid(t_data *img, int **map, t_v2i pos, int space, double scale)
 		space += tmp;
 	}
 }
-
-
-
-void d_grid(t_data *img, int **map, t_v2i pos, int space, double scale, double height)
-{
-	int i;
-	int tmp;
-
-	i = 0;
-	tmp = space;
-	space = 0;
-	double rad_30 = 30 * M_PI / 180;
-	double rad_45 = 45 * M_PI / 180;
-
-	// DRAW COLUMNS
-	while (i < SIZE_X)
-	{
-		int x1 = pos[0] + space * scale;
-		int y1 = pos[1];
-		int x2 = pos[0] + space * scale;
-		int y2 = pos[1] + 180 * scale;
-
-		//HEIGHT PROJECTION
-		y1 -= map[i][0] * height;
-		y2 -= map[i][SIZE_Y - 1] * height;
-
-		int new_x1 = x1 * cos(rad_30) + y1 * sin(rad_30);
-		int new_y1 = y1 * cos(rad_45) - x1 * sin(rad_45) * cos(rad_30);
-		int new_x2 = x2 * cos(rad_30) + y2 * sin(rad_30);
-		int new_y2 = y2 * cos(rad_45) - x2 * sin(rad_45) * cos(rad_30);
-
-		bresnahan_put_line(img, (t_v2i){new_x1, new_y1}, (t_v2i){new_x2, new_y2}, WHITE);
-		i++;
-		space += tmp;
-	}
-
-	space = 0;
-	i = 0;
-
-	// DRAW ROWS
-	while (i < SIZE_Y)
-	{
-		int x1 = pos[0];
-		int y1 = pos[1] + space * scale;	
-		int x2 = pos[0] + 180 * scale;
-		int y2 = pos[1] + space * scale;
-
-
-		// HEIGHT PROJECTION
-		y1 -= map[0][i] * height;
-		y2 -= map[SIZE_X - 1][i] * height;
-
-		int new_x1 = x1 * cos(rad_30) + y1 * sin(rad_30);
-		int new_y1 = y1 * cos(rad_45) - x1 * sin(rad_45) * cos(rad_30);
-		int new_x2 = x2 * cos(rad_30) + y2 * sin(rad_30);
-		int new_y2 = y2 * cos(rad_45) - x2 * sin(rad_45) * cos(rad_30);
-
-		bresnahan_put_line(img, (t_v2i){new_x1, new_y1}, (t_v2i){new_x2, new_y2}, WHITE);
-		
-		i++;
-		space += tmp;
-	}
-}
-
-
-
 
 
 int    main(void)
@@ -374,7 +307,9 @@ int    main(void)
 
 	
 	//draw_grid(&img, map, (t_v2i){300, 300}, 20);
-	d_grid(&img, map, (t_v2i){-100, 700}, 20, 2, 1);
+
+	
+	draw_grid(&img, map, (t_v2i){-300, 900}, 20, 1);
 
 
 	mlx_put_image_to_window(mlx, mlx_win, img.img, 0, 0);
