@@ -9,6 +9,9 @@
 # define ESC		0xFF1B
 
 
+#define M_PI       3.14159265358979323846
+
+
 # define WHITE 		0xFFFFFF
 # define RED 0xFF0000
 
