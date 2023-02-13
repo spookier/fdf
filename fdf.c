@@ -7,6 +7,11 @@
 #define SIZE_X 10
 #define SIZE_Y 10
 
+ #define max(a,b) \
+   ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a > _b ? _a : _b; })
+
 
 typedef float			t_v2f __attribute__((vector_size (8)));
 typedef unsigned int	t_v2u __attribute__((vector_size (8)));
@@ -69,6 +74,7 @@ void	bresnahan_put_line(t_data *data, t_v2i p1, t_v2i p2, int color)
 	}
 }
 
+
 int	**create_tab(int size_x, int size_y)
 {
 	int **tab;
@@ -81,7 +87,7 @@ int	**create_tab(int size_x, int size_y)
 		tab[i] = malloc(sizeof(int) * size_y);
 		i++;
 	}
-	printf("[OK] MAP CREATED!\n");
+	printf("[OK] MAP MALLOCED!\n");
 	return (tab);
 }
 
@@ -258,6 +264,7 @@ void draw_grid(t_data *img, int **map, t_v2i pos, int space, double scale)
 		bresnahan_put_line(img, (t_v2i){new_x1, new_y1}, (t_v2i){new_x2, new_y2}, WHITE);
 		i++;
 		space += tmp;
+		
 	}
 
 	space = 0;
@@ -271,6 +278,7 @@ void draw_grid(t_data *img, int **map, t_v2i pos, int space, double scale)
 		int x2 = pos[0] + 180 * scale;
 		int y2 = pos[1] + space * scale;
 
+
 		int new_x1 = x1 * cos(rad_30) + y1 * sin(rad_30);
 		int new_y1 = y1 * cos(rad_45) - x1 * sin(rad_45) * cos(rad_30);
 		int new_x2 = x2 * cos(rad_30) + y2 * sin(rad_30);
@@ -280,7 +288,15 @@ void draw_grid(t_data *img, int **map, t_v2i pos, int space, double scale)
 		i++;
 		space += tmp;
 	}
+
 }
+
+
+
+
+
+
+
 
 
 int    main(void)
@@ -309,9 +325,23 @@ int    main(void)
 	//draw_grid(&img, map, (t_v2i){300, 300}, 20);
 
 	
-	draw_grid(&img, map, (t_v2i){-300, 900}, 20, 1);
-
-
+	//draw_grid(&img, map, (t_v2i){-300, 900}, 20, 2);
+	int i = 0;
+	int j = 0;
+	while (i < 10)
+	{
+		j = 0;
+		while(j < 10)
+		{
+			printf("map[%d][%d] = %d\n", i, j, map[i][j]);
+			j++;
+		}
+		i++;
+	}
+	
+	draw_grid(&img, map, (t_v2i){-800, 800}, 20, 3);
+	
+	
 	mlx_put_image_to_window(mlx, mlx_win, img.img, 0, 0);
 	//usleep(100000);
 	
