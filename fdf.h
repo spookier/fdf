@@ -13,7 +13,8 @@
 
 
 # define WHITE 		0xFFFFFF
-# define RED 0xFF0000
+# define RED 		0xFF0000
+
 
 typedef struct	s_data {
 	void	*img;
