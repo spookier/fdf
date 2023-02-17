@@ -102,31 +102,31 @@ int	key_hook(int keycode, t_data *data)
 }
 
 
-void draw_grid(t_data *data, int lines, t_v2i size, t_v2i pos)
-{
-    int i;
-    int x;
-    int y;
-    int spacing;
+// void draw_grid(t_data *data, int lines, t_v2i size, t_v2i pos)
+// {
+//     int i;
+//     int x;
+//     int y;
+//     int spacing;
+//     spacing = size[0] / (lines + 1);
+//     x = 0;
+//     y = 0;
+//     i = 1;
+//     while(i <= lines || y <= lines)
+//     {
+//         x = i * spacing + pos[0];
+//         y = i * spacing + pos[1];
+//         put_line(data, (t_v2i){x, pos[1]}, (t_v2i){x, size[1] + pos[1]}, WHITE);
+//         put_line(data, (t_v2i){pos[0], y}, (t_v2i){size[0] + pos[0], y}, WHITE);
+//         i++;
+//         y++;
+//     }
+// }
 
-    spacing = size[0] / (lines + 1);
-    x = 0;
-    y = 0;
-    i = 1;
-    while(i <= lines || y <= lines)
-    {
-        x = i * spacing + pos[0];
-        y = i * spacing + pos[1];
-        put_line(data, (t_v2i){x, pos[1]}, (t_v2i){x, size[1] + pos[1]}, WHITE);
-        put_line(data, (t_v2i){pos[0], y}, (t_v2i){size[0] + pos[0], y}, WHITE);
-        i++;
-        y++;
-    }
-}
 
 void draw_grid_rotated(t_data *data, int lines, t_v2i size, t_v2i pos)
 {
-    int i;
+    int i = 1;
     int x;
     int y;
     int spacing;
@@ -139,8 +139,7 @@ void draw_grid_rotated(t_data *data, int lines, t_v2i size, t_v2i pos)
     double angle = M_PI / 4.0;
 
     // Loop through the grid lines
-    for (i = 1; i <= lines; i++) 
-	{
+    while (i <= lines) {
 
         // Calculate the coordinates of the endpoints of the current grid line
         x = i * spacing;
@@ -180,26 +179,93 @@ void draw_grid_rotated(t_data *data, int lines, t_v2i size, t_v2i pos)
 
         // Draw the current grid line
         put_line(data, start, end, WHITE);
+        
+        i++;
     }
 }
 
+void	draw_rect(t_data *data, t_v2i start, t_v2i dim, int color)
+{
+	t_v2i	pos;
+
+	pos[1] = 0;
+	while(pos[1] < dim[1])
+	{
+		pos[0] = 0;
+		while(pos[0] < dim[0])
+		{
+			my_mlx_pixel_put(data, start + pos, 0x00FFFFFF);
+    		pos[0]++;
+		}
+    	pos[1]++;
+	}
+}
+
+
+
+int get_map(int map[SIZE_X][SIZE_Y], t_v2i size, t_v2i pos)
+{
+    if (pos[0] < 0 || pos[0] >= size[0] || pos[1] < 0 || pos[1] >= size[1] || pos[0] > SIZE_X || pos[1] > SIZE_Y)
+	{
+		printf("GET_MAP ERROR!\n");
+        exit(1);
+    }
+    return map[pos[0]][pos[1]];
+}
+
+
+void init_map(int map[SIZE_X][SIZE_Y])
+{
+	//fill map with random values
+	for (int y = 0; y < SIZE_Y; y++)
+		for (int x = 0; x < SIZE_X; x++)
+		{
+			map[x][y] = rand() % 10;
+		}
+
+	//print map
+	printf("\n\n--------------------------------\n");
+	for (int y = 0; y < SIZE_Y; y++)
+	{
+		for (int x = 0; x < SIZE_X; x++)
+		{
+			printf("%2d ", map[x][y]);
+		}
+		printf("\n");
+	}
+	printf("---------------------------------\n\n");
+
+}
 
 int    main(void)
 {
 	void	*mlx;
 	void	*mlx_win;
 	t_data	img;
-	int		**map;
+	int		map[SIZE_X][SIZE_Y];
+
+	init_map(map);
+
+	t_v2i pos;
+	t_v2i size;
+	
+	
+	pos[0] = get_map(map, (t_v2i){600, 600}, (t_v2i){5, 5});
+	printf("AAAAAAAAAAAAAAAAAA = %d \n", pos[0]);
+
+
+	
 
 	mlx = mlx_init();
 	mlx_win = mlx_new_window(mlx, 1080, 1080, "fdf");
 	img.img = mlx_new_image(mlx, 1080, 1080);
 	img.addr = mlx_get_data_addr(img.img, &img.bits_per_pixel, &img.line_length, &img.endian);
-
 	mlx_key_hook(mlx_win, key_hook, &img);
 
 
+
 	draw_grid_rotated(&img, 15, (t_v2i){600, 600}, (t_v2i){500, 300});
+	//draw_rect(&img, (t_v2i){150, 150}, (t_v2i){50, 50}, WHITE);
 	
 	mlx_put_image_to_window(mlx, mlx_win, img.img, 0, 0);
 	//usleep(100000);
