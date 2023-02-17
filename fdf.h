@@ -19,7 +19,6 @@
 
 
 //STRUCTS
-
 typedef struct	s_data {
 	void	*img;
 	char	*addr;

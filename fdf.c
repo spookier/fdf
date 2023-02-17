@@ -124,6 +124,65 @@ void draw_grid(t_data *data, int lines, t_v2i size, t_v2i pos)
     }
 }
 
+void draw_grid_rotated(t_data *data, int lines, t_v2i size, t_v2i pos)
+{
+    int i;
+    int x;
+    int y;
+    int spacing;
+    t_v2i end;
+
+    // Calculate the spacing between grid lines
+    spacing = size[0] / (lines + 1);
+
+    // Define the rotation angle in radians
+    double angle = M_PI / 4.0;
+
+    // Loop through the grid lines
+    for (i = 1; i <= lines; i++) 
+	{
+
+        // Calculate the coordinates of the endpoints of the current grid line
+        x = i * spacing;
+        y = 0;
+        double new_x = x * cos(angle) - y * sin(angle);
+        double new_y = x * sin(angle) + y * cos(angle);
+        t_v2i start = {pos[0] + (int)new_x, pos[1] + (int)(new_y * 0.5)};
+
+        x = i * spacing;
+        y = size[1];
+        new_x = x * cos(angle) - y * sin(angle);
+        new_y = x * sin(angle) + y * cos(angle);
+        end[0] = new_x;
+        end[1] = new_y * 0.5;
+        end[0] += pos[0];
+        end[1] += pos[1];
+
+        // Draw the current grid line
+        put_line(data, start, end, WHITE);
+
+        // Calculate the coordinates of the endpoints of the current grid line
+        x = 0;
+        y = i * spacing;
+        new_x = x * cos(angle) - y * sin(angle);
+        new_y = x * sin(angle) + y * cos(angle);
+        start[0] = pos[0] + (int)new_x;
+        start[1] = pos[1] + (int)(new_y * 0.5);
+
+        x = size[0];
+        y = i * spacing;
+        new_x = x * cos(angle) - y * sin(angle);
+        new_y = x * sin(angle) + y * cos(angle);
+        end[0] = new_x;
+        end[1] = new_y * 0.5;
+        end[0] += pos[0];
+        end[1] += pos[1];
+
+        // Draw the current grid line
+        put_line(data, start, end, WHITE);
+    }
+}
+
 
 int    main(void)
 {
@@ -140,8 +199,8 @@ int    main(void)
 	mlx_key_hook(mlx_win, key_hook, &img);
 
 
-	draw_grid(&img, 8, (t_v2i){400,400}, (t_v2i){100, 100});
-
+	draw_grid_rotated(&img, 15, (t_v2i){600, 600}, (t_v2i){500, 300});
+	
 	mlx_put_image_to_window(mlx, mlx_win, img.img, 0, 0);
 	//usleep(100000);
 	
