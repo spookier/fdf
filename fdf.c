@@ -97,23 +97,23 @@ void	put_line(t_data *data, t_v2i p1, t_v2i p2, int color)
 
 
 
-void draw_grid(t_data *data, int lines, t_v2i pos)
+void draw_grid(t_data *data, int lines, t_v2i size, t_v2i pos)
 {
     int i;
     int x;
     int y;
     int spacing;
 
-    spacing = pos[0] / (lines + 1);  
+    spacing = size[0] / (lines + 1);
     x = 0;
     y = 0;
     i = 1;
     while(i <= lines || y <= lines)
     {
-        x = i * spacing;
-        y = i * spacing;
-        put_line(data, (t_v2i){x, 0}, (t_v2i){x, pos[1]}, WHITE);
-        put_line(data, (t_v2i){0, y}, (t_v2i){pos[0], y}, WHITE);
+        x = i * spacing + pos[0];
+        y = i * spacing + pos[1];
+        put_line(data, (t_v2i){x, pos[1]}, (t_v2i){x, size[1] + pos[1]}, WHITE);
+        put_line(data, (t_v2i){pos[0], y}, (t_v2i){size[0] + pos[0], y}, WHITE);
         i++;
         y++;
     }
@@ -121,48 +121,48 @@ void draw_grid(t_data *data, int lines, t_v2i pos)
 
 
 
-void draw_grid2(t_data *data, int lines, t_v2i size)
-{
-    int i;
-    int x;
-    int y;
-    int spacing;
+// void draw_grid2(t_data *data, int lines, t_v2i size)
+// {
+//     int i;
+//     int x;
+//     int y;
+//     int spacing;
 
-    spacing = size[0] / (lines + 1);  // use pos.x instead of pos[0]
-    x = 0;
-    y = 0;
-    i = 1;
-    while(i <= lines || y <= lines)
-    {
-        x = i * spacing;
-        y = i * spacing;
-        put_line(data, (t_v2i){x + size[0], size[1]}, (t_v2i){x + size[0], size[1] + size[1]}, WHITE);
-        put_line(data, (t_v2i){size[0], y + size[1]}, (t_v2i){size[0] + size[0], y + size[1]}, WHITE); 
-        i++;
-        y++;
-    }
-}
+//     spacing = size[0] / (lines + 1);  // use pos.x instead of pos[0]
+//     x = 0;
+//     y = 0;
+//     i = 1;
+//     while(i <= lines || y <= lines)
+//     {
+//         x = i * spacing;
+//         y = i * spacing;
+//         put_line(data, (t_v2i){x + size[0], size[1]}, (t_v2i){x + size[0], size[1] + size[1]}, WHITE);
+//         put_line(data, (t_v2i){size[0], y + size[1]}, (t_v2i){size[0] + size[0], y + size[1]}, WHITE); 
+//         i++;
+//         y++;
+//     }
+// }
 
 
 
-void draw_grid3(t_data *data, int lines, t_v2i pos, int x_offset, int y_offset)
-{
-    int spacing = pos[0] / (lines + 1);
-    int x = x_offset;
-    int y = y_offset;
-    int i = 1;
-    while (i <= lines) {
-        put_line(data, (t_v2i){x + pos[0], pos[1]}, (t_v2i){x + pos[0], pos[1] + pos[1]}, WHITE);
-        x += spacing;
-        i++;
-    }
-    i = 1;
-    while (i <= lines) {
-        put_line(data, (t_v2i){pos[0], y + pos[1]}, (t_v2i){pos[0] + pos[0], y + pos[1]}, WHITE);
-        y += spacing;
-        i++;
-    }
-}
+// void draw_grid3(t_data *data, int lines, t_v2i pos, int x_offset, int y_offset)
+// {
+//     int spacing = pos[0] / (lines + 1);
+//     int x = x_offset;
+//     int y = y_offset;
+//     int i = 1;
+//     while (i <= lines) {
+//         put_line(data, (t_v2i){x + pos[0], pos[1]}, (t_v2i){x + pos[0], pos[1] + pos[1]}, WHITE);
+//         x += spacing;
+//         i++;
+//     }
+//     i = 1;
+//     while (i <= lines) {
+//         put_line(data, (t_v2i){pos[0], y + pos[1]}, (t_v2i){pos[0] + pos[0], y + pos[1]}, WHITE);
+//         y += spacing;
+//         i++;
+//     }
+// }
 
 
 
@@ -214,7 +214,7 @@ int    main(void)
 	//put_line(&img, (t_v2i){0, 80}, (t_v2i){500, 500}, WHITE);
 	
 
-	draw_grid(&img, 8, (t_v2i){300,300});
+	draw_grid(&img, 8, (t_v2i){400,400}, (t_v2i){500, 100});
 	//draw_grid2(&img, 10, (t_v2i){500, 500});
 	//draw_grid3(&img, 10, (t_v2i){300, 300}, 100, 50);
 	mlx_put_image_to_window(mlx, mlx_win, img.img, 0, 0);
