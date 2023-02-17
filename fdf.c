@@ -68,7 +68,6 @@ void	bresnahan_put_line(t_data *data, t_v2i p1, t_v2i p2, int color)
 	}
 }
 
-
 void	put_line(t_data *data, t_v2i p1, t_v2i p2, int color)
 {
 	t_v2f	diff;
@@ -95,6 +94,12 @@ void	put_line(t_data *data, t_v2i p1, t_v2i p2, int color)
 	}
 }
 
+int	key_hook(int keycode, t_data *data)
+{
+	if(keycode == ESC)
+		exit(0);
+	return (0);
+}
 
 
 void draw_grid(t_data *data, int lines, t_v2i size, t_v2i pos)
@@ -120,13 +125,11 @@ void draw_grid(t_data *data, int lines, t_v2i size, t_v2i pos)
 }
 
 
-
 int    main(void)
 {
 	void	*mlx;
 	void	*mlx_win;
 	t_data	img;
-
 	int		**map;
 
 	mlx = mlx_init();
@@ -134,12 +137,8 @@ int    main(void)
 	img.img = mlx_new_image(mlx, 1080, 1080);
 	img.addr = mlx_get_data_addr(img.img, &img.bits_per_pixel, &img.line_length, &img.endian);
 
+	mlx_key_hook(mlx_win, key_hook, &img);
 
-	// map = create_tab(SIZE_X, SIZE_Y);
-	// fill_tab(map, SIZE_X, SIZE_Y);
-
-	//put_line(&img, (t_v2i){0, 80}, (t_v2i){500, 500}, WHITE);
-	
 
 	draw_grid(&img, 8, (t_v2i){400,400}, (t_v2i){100, 100});
 
