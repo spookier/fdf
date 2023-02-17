@@ -141,7 +141,7 @@ int    main(void)
 	//put_line(&img, (t_v2i){0, 80}, (t_v2i){500, 500}, WHITE);
 	
 
-	draw_grid(&img, 8, (t_v2i){400,400}, (t_v2i){500, 100});
+	draw_grid(&img, 8, (t_v2i){400,400}, (t_v2i){100, 100});
 
 	mlx_put_image_to_window(mlx, mlx_win, img.img, 0, 0);
 	//usleep(100000);
