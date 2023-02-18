@@ -6,6 +6,8 @@
 
 #define SIZE_X 10
 #define SIZE_Y 10
+#define ZOOM 10
+
 
 typedef float			t_v2f __attribute__((vector_size (8)));
 typedef unsigned int	t_v2u __attribute__((vector_size (8)));
@@ -202,15 +204,30 @@ void	draw_rect(t_data *data, t_v2i start, t_v2i dim, int color)
 }
 
 
+t_v2i get_tile_position(t_v2i pos, int spacing, int row, int col) {
+    t_v2i tile_pos;
+    tile_pos[0] = pos[0] + col * spacing / 2;
+    tile_pos[1] = pos[1] + row * spacing / 2 - spacing / 2;
+    return tile_pos;
+}
 
-int get_map(int map[SIZE_X][SIZE_Y], t_v2i size, t_v2i pos)
+
+
+// int get_map(int map[SIZE_X][SIZE_Y], t_v2i size, t_v2i pos)
+// {
+//     if (pos[0] < 0 || pos[0] >= size[0] || pos[1] < 0 || pos[1] >= size[1] || pos[0] > SIZE_X || pos[1] > SIZE_Y)
+// 	{
+// 		printf("GET_MAP ERROR!\n");
+//         exit(1);
+//     }
+//     return map[pos[0]][pos[1]];
+// }
+
+int	get_map(int map[SIZE_X][SIZE_Y], t_v2i size, t_v2i pos)
 {
-    if (pos[0] < 0 || pos[0] >= size[0] || pos[1] < 0 || pos[1] >= size[1] || pos[0] > SIZE_X || pos[1] > SIZE_Y)
-	{
-		printf("GET_MAP ERROR!\n");
-        exit(1);
-    }
-    return map[pos[0]][pos[1]];
+	if (pos[0] < 0 || pos[1] < 0 || pos[0] >= size[0] || pos[1] >= size[1])
+		return (0);
+	return (map[pos[0]][pos[1]]);
 }
 
 
@@ -246,15 +263,10 @@ int    main(void)
 
 	init_map(map);
 
-	t_v2i pos;
-	t_v2i size;
-	
-	
-	pos[0] = get_map(map, (t_v2i){600, 600}, (t_v2i){5, 5});
-	printf("AAAAAAAAAAAAAAAAAA = %d \n", pos[0]);
 
-
-	
+	t_v2i	pos;
+	t_v2i	point;
+	int		val[3];
 
 	mlx = mlx_init();
 	mlx_win = mlx_new_window(mlx, 1080, 1080, "fdf");
@@ -264,9 +276,26 @@ int    main(void)
 
 
 
-	draw_grid_rotated(&img, 15, (t_v2i){600, 600}, (t_v2i){500, 300});
-	//draw_rect(&img, (t_v2i){150, 150}, (t_v2i){50, 50}, WHITE);
 	
+
+	draw_grid_rotated(&img, 10, (t_v2i){600, 600}, (t_v2i){500, 300});
+	
+	//find coordinate of {x=3 y=1}
+	//t_v2i tile_pos = get_tile_position((t_v2i){500, 300}, 10, 1, 1);
+
+	//draw_rect(&img, tile_pos, (t_v2i){10, 10}, WHITE);
+
+	// for (pos[1] = 0; pos[1] < SIZE_Y; pos[1]++)
+	// 	for (pos[0] = 0; pos[0] < SIZE_X; pos[0]++)
+	// 	{
+	// 		val[0] = get_map(map, (t_v2i){SIZE_X, SIZE_Y}, pos);
+	// 		val[1] = get_map(map, (t_v2i){SIZE_X, SIZE_Y}, pos + (t_v2i){1, 0});
+	// 		val[2] = get_map(map, (t_v2i){SIZE_X, SIZE_Y}, pos + (t_v2i){0, 1});
+	// 		point = (t_v2i){ZOOM * 5, 540} + (t_v2i){pos[0] * 5 + pos[1] * 5, pos[0] * -3 + pos[1] * 3} * ZOOM;
+	// 		put_line(&img, point + ((t_v2i){-5, 0} + (t_v2i){0, -val[0]}) * ZOOM, point + ((t_v2i){0, -3} + (t_v2i){0, -val[1]}) * ZOOM, 0xAE80AE);
+	// 		put_line(&img, point + ((t_v2i){-5, 0} + (t_v2i){0, -val[0]}) * ZOOM, point + ((t_v2i){0, 3} + (t_v2i){0, -val[2]}) * ZOOM, 0xAE80AE);
+	// 	}
+
 	mlx_put_image_to_window(mlx, mlx_win, img.img, 0, 0);
 	//usleep(100000);
 	
