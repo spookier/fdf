@@ -1,12 +1,14 @@
 #include "fdf.h"
 #include "mlx_int.h"
+#include "math.h"
 
 #define SCREEN_HEIGHT 	1080
 #define SCREEN_WIDTH 	1080
+#define MULTIPLIER		(0.125f)
 
 #define SIZE_X 10
 #define SIZE_Y 10
-#define ZOOM 5
+#define ZOOM 100
 
 
 typedef float			t_v2f __attribute__((vector_size (8)));
@@ -72,11 +74,30 @@ void    my_mlx_pixel_put(t_data *data, t_v2i pos, int color)
 // 	}
 // }
 
-void	put_line(t_data *data, t_v2i p1, t_v2i p2, int color)
+int		col_inter(int cola, int colb, float r)
+{
+	int	rgb1[3];
+	int	rgb2[3];
+	int res[3];
+
+	rgb1[0] = (cola & 0xFF0000) >> 16;
+	rgb1[1] = (cola & 0xFF00) >> 8;
+	rgb1[2] = (cola & 0xFF);
+	rgb2[0] = (colb & 0xFF0000) >> 16;
+	rgb2[1] = (colb & 0xFF00) >> 8;
+	rgb2[2] = (colb & 0xFF);
+	res[0] = rgb1[0] * r + rgb2[0] * (1.0f - r);
+	res[1] = rgb1[1] * r + rgb2[1] * (1.0f - r);
+	res[2] = rgb1[2] * r + rgb2[2] * (1.0f - r);
+	return ((res[0] << 16) + (res[1] << 8) + res[2]);
+}
+
+void	put_line(t_data *data, t_v2i p1, int cola, t_v2i p2, int colb)
 {
 	t_v2f	diff;
 	t_v2f	start;
 	int		count;
+	int		max;
 
 	diff = (t_v2f){p2[0], p2[1]} - (t_v2f){p1[0], p1[1]};
 	if (fabsf(diff[0]) > fabsf(diff [1]))
@@ -90,9 +111,10 @@ void	put_line(t_data *data, t_v2i p1, t_v2i p2, int color)
 		diff = diff / fabsf(diff[1]);
 	}
 	start = (t_v2f){p1[0], p1[1]};
+	max = count;
 	while (count)
 	{
-		my_mlx_pixel_put(data, (t_v2i){start[0], start[1]}, color);
+		my_mlx_pixel_put(data, (t_v2i){start[0], start[1]}, col_inter(cola, colb, (float)count / max));
 		start = start + diff;
 		count--;
 	}
@@ -162,7 +184,7 @@ void draw_grid_rotated(t_data *data, int lines, t_v2i size, t_v2i pos)
         end[1] += pos[1];
 
         // Draw the current grid line
-        put_line(data, start, end, WHITE);
+        put_line(data, start, WHITE, end, WHITE);
 
         // Calculate the coordinates of the endpoints of the current grid line
         x = 0;
@@ -182,7 +204,7 @@ void draw_grid_rotated(t_data *data, int lines, t_v2i size, t_v2i pos)
         end[1] += pos[1];
 
         // Draw the current grid line
-        put_line(data, start, end, WHITE);
+        put_line(data, start, WHITE, end, WHITE);
         
         i++;
     }
@@ -209,7 +231,7 @@ void	draw_rect(t_data *data, t_v2i start, t_v2i dim, int color)
 
 
 
-void init_map(int **map)
+void init_map(int map[SIZE_X][SIZE_Y])
 {
 
 	//srand(time(NULL));
@@ -219,7 +241,7 @@ void init_map(int **map)
 	for (int y = 0; y < SIZE_Y; y++)
 		for (int x = 0; x < SIZE_X; x++)
 		{
-			map[x][y] = rand() % 5;
+			map[x][y] = rand() % 24 - 12;
 		}
 
 	//print map
@@ -244,12 +266,33 @@ int	get_map(int map[SIZE_X][SIZE_Y], t_v2i size, t_v2i pos)
 	return (map[pos[0]][pos[1]]);
 }
 
+t_v2f	ft_orto(t_v2f vec, float z)
+{
+	t_v2f	ret;
+	float	s;
+	float	c;
+
+	s = sinf(M_PI_4);
+	c = cosf(M_PI_4);
+	ret[0] = vec[0] * c - vec[1] * s;
+	ret[1] = vec[0] * s + vec[1] * c;
+	ret[1] -= z;
+	ret[1] *= 0.5f;
+	return (ret);
+}
+
+static t_v2i	v2ftoi(t_v2f vec)
+{
+	return ((t_v2i){vec[0], vec[1]});
+}
 
 void draw_map(t_data *img, int map[SIZE_X][SIZE_Y])
 {
 	t_v2i	pos;
-	t_v2i	point;
+	t_v2f	off;
 	int		val[3];
+	t_v2f	proj[3];
+	t_v2f	res[3];
 
 	pos[1] = 0;
 	while (pos[1] < SIZE_Y) 
@@ -262,12 +305,18 @@ void draw_map(t_data *img, int map[SIZE_X][SIZE_Y])
 			val[1] = get_map(map, (t_v2i){SIZE_X, SIZE_Y}, pos + (t_v2i){1, 0});
 			val[2] = get_map(map, (t_v2i){SIZE_X, SIZE_Y}, pos + (t_v2i){0, 1});
 
-			point = (t_v2i){SCREEN_WIDTH/2 - SIZE_X * ZOOM * 5, SCREEN_HEIGHT/2} + (t_v2i){pos[0] * 5 + pos[1] * 5, pos[0] * -3 + pos[1] * 3} * ZOOM;
+			off = (t_v2f){SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2};
 
-			
+			proj[0] = (t_v2f){pos[0], pos[1]};
+			proj[1] = proj[0] + (t_v2f){1, 0};
+			proj[2] = proj[0] + (t_v2f){0, 1};
 
-			put_line(&(*img), point + ((t_v2i){-5, 0} + (t_v2i){0, -val[0]}) * ZOOM, point + ((t_v2i){0, -3} + (t_v2i){0, -val[1]}) * ZOOM, 0xAE80AE);
-			put_line(&(*img), point + ((t_v2i){-5, 0} + (t_v2i){0, -val[0]}) * ZOOM, point + ((t_v2i){0, 3} + (t_v2i){0, -val[2]}) * ZOOM, 0xAE80AE);
+			res[0] = off + ft_orto(proj[0], val[0] * MULTIPLIER) * ZOOM;
+			res[1] = off + ft_orto(proj[1], val[1] * MULTIPLIER) * ZOOM;
+			res[2] = off + ft_orto(proj[2], val[2] * MULTIPLIER) * ZOOM;
+
+			put_line(img, v2ftoi(res[0]), 0x00AEAE, v2ftoi(res[1]), 0xAE80AE);
+			put_line(img, v2ftoi(res[0]), 0x00AEAE, v2ftoi(res[2]), 0xAE80AE);
 			
 			pos[0]++;
 		}
@@ -285,19 +334,19 @@ int    main(void)
 	t_data	img;
 	//int		map[SIZE_X][SIZE_Y];
 
-	//init_map(map);
-
 	int map[10][10] = { 
 				{0,0,0,0,0,0,0,0,0,0},
 				{0,0,0,0,0,0,0,0,0,0},
 				{0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,-15,0,0,0},
+				{156,20,2,10,-50,50,20,4,12,65},
 				{0,0,0,0,0,0,0,0,0,0},
 				{0,0,0,0,0,0,0,0,0,0},
 				{0,0,0,0,0,0,0,0,0,0},
 				{0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0},};
+				{0,0,0,0,0,0,0,0,0,0}};
+
+init_map(map);
 
 	mlx = mlx_init();
 	mlx_win = mlx_new_window(mlx, 1080, 1080, "fdf");

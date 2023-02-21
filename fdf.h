@@ -6,10 +6,6 @@
 #include <stdio.h>
 #include "mlx_linux/mlx.h"
 
-
-//MATHs
-#define M_PI       3.14159265358979323846
-
 //COLORS
 # define WHITE 		0xFFFFFF
 # define RED 		0xFF0000
