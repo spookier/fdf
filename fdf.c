@@ -4,9 +4,9 @@
 #define SCREEN_HEIGHT 	1080
 #define SCREEN_WIDTH 	1080
 
-#define SIZE_X 30
-#define SIZE_Y 30
-#define ZOOM 2
+#define SIZE_X 10
+#define SIZE_Y 10
+#define ZOOM 5
 
 
 typedef float			t_v2f __attribute__((vector_size (8)));
@@ -16,59 +16,61 @@ typedef int				t_v2i __attribute__((vector_size (8)));
 void    my_mlx_pixel_put(t_data *data, t_v2i pos, int color)
 {
     char    *dst;
-
+	//if outside screen SECURITY
+	if(pos[0] < 0 || pos[1] < 0 || pos[0] >= SCREEN_WIDTH || pos[1] >= SCREEN_HEIGHT)
+		return ;
     dst = data->addr + (pos[1] * data->line_length + pos[0] * (data->bits_per_pixel / 8));
     *(unsigned int*)dst = color;
 }
 
-double	linear_interpolation(double a, double b, double ratio)
-{
-	double	c;
+// double	linear_interpolation(double a, double b, double ratio)
+// {
+// 	double	c;
 
-	c = a * ratio + b * (1.0 - ratio);
-	return (c);
-}
+// 	c = a * ratio + b * (1.0 - ratio);
+// 	return (c);
+// }
 
-void	bresnahan_put_line(t_data *data, t_v2i p1, t_v2i p2, int color)
-{
-	t_v2i	d;
-	t_v2i	s;
-	int		e;
-	int		error;
+// void	bresnahan_put_line(t_data *data, t_v2i p1, t_v2i p2, int color)
+// {
+// 	t_v2i	d;
+// 	t_v2i	s;
+// 	int		e;
+// 	int		error;
 
-	d = (t_v2i){abs(p2[0] - p1[0]), -abs(p2[1] - p1[1])};
-	s = (t_v2i){0, 0};
-	if (p1[0] < p2[0])
-		s[0] = 1;
-	else
-		s[0] = -1;
-	if (p1[1] < p2[1])
-		s[1] = 1;
-	else
-		s[1] = -1;
-	error = d[0] + d[1];
-	while (1)
-	{
-		my_mlx_pixel_put(data, (t_v2i){p1[0], p1[1]}, color);
-		if (p1[0] == p2[0] && p1[1] == p2[1])
-			return ;
-		e = 2 * error;
-		if (e >= d[1])
-		{
-			if (p1[0] == p2[0])
-				return ;
-			error = error + d[1];
-			p1[0] += s[0];
-		}
-		if (e <= d[0])
-		{
-			if (p1[1] == p2[1])
-				return ;
-			error = error + d[0];
-			p1[1] += s[1];
-		}
-	}
-}
+// 	d = (t_v2i){abs(p2[0] - p1[0]), -abs(p2[1] - p1[1])};
+// 	s = (t_v2i){0, 0};
+// 	if (p1[0] < p2[0])
+// 		s[0] = 1;
+// 	else
+// 		s[0] = -1;
+// 	if (p1[1] < p2[1])
+// 		s[1] = 1;
+// 	else
+// 		s[1] = -1;
+// 	error = d[0] + d[1];
+// 	while (1)
+// 	{
+// 		my_mlx_pixel_put(data, (t_v2i){p1[0], p1[1]}, color);
+// 		if (p1[0] == p2[0] && p1[1] == p2[1])
+// 			return ;
+// 		e = 2 * error;
+// 		if (e >= d[1])
+// 		{
+// 			if (p1[0] == p2[0])
+// 				return ;
+// 			error = error + d[1];
+// 			p1[0] += s[0];
+// 		}
+// 		if (e <= d[0])
+// 		{
+// 			if (p1[1] == p2[1])
+// 				return ;
+// 			error = error + d[0];
+// 			p1[1] += s[1];
+// 		}
+// 	}
+// }
 
 void	put_line(t_data *data, t_v2i p1, t_v2i p2, int color)
 {
@@ -204,27 +206,13 @@ void	draw_rect(t_data *data, t_v2i start, t_v2i dim, int color)
 }
 
 
-t_v2i get_tile_position(t_v2i pos, int spacing, int row, int col) {
-    t_v2i tile_pos;
-    tile_pos[0] = pos[0] + col * spacing / 2;
-    tile_pos[1] = pos[1] + row * spacing / 2 - spacing / 2;
-    return tile_pos;
-}
 
 
 
-int	get_map(int map[SIZE_X][SIZE_Y], t_v2i size, t_v2i pos)
-{
-	if (pos[0] < 0 || pos[1] < 0 || pos[0] >= size[0] || pos[1] >= size[1])
-		return (0);
-	return (map[pos[0]][pos[1]]);
-}
-
-
-void init_map(int map[SIZE_X][SIZE_Y])
+void init_map(int **map)
 {
 
-	srand(time(NULL));
+	//srand(time(NULL));
  	/* generate 0 or 1 randomly: probability 50%*/
 
 	//fill map with random values
@@ -249,6 +237,13 @@ void init_map(int map[SIZE_X][SIZE_Y])
 }
 
 
+int	get_map(int map[SIZE_X][SIZE_Y], t_v2i size, t_v2i pos)
+{
+	if (pos[0] < 0 || pos[1] < 0 || pos[0] >= size[0] || pos[1] >= size[1])
+		return (0);
+	return (map[pos[0]][pos[1]]);
+}
+
 
 void draw_map(t_data *img, int map[SIZE_X][SIZE_Y])
 {
@@ -263,16 +258,25 @@ void draw_map(t_data *img, int map[SIZE_X][SIZE_Y])
 		while (pos[0] < SIZE_X) 
 		{
 			val[0] = get_map(map, (t_v2i){SIZE_X, SIZE_Y}, pos);
+
 			val[1] = get_map(map, (t_v2i){SIZE_X, SIZE_Y}, pos + (t_v2i){1, 0});
 			val[2] = get_map(map, (t_v2i){SIZE_X, SIZE_Y}, pos + (t_v2i){0, 1});
-			point = (t_v2i){ZOOM * 5, 540} + (t_v2i){pos[0] * 5 + pos[1] * 5, pos[0] * -3 + pos[1] * 3} * ZOOM;
+
+			point = (t_v2i){SCREEN_WIDTH/2 - SIZE_X * ZOOM * 5, SCREEN_HEIGHT/2} + (t_v2i){pos[0] * 5 + pos[1] * 5, pos[0] * -3 + pos[1] * 3} * ZOOM;
+
+			
+
 			put_line(&(*img), point + ((t_v2i){-5, 0} + (t_v2i){0, -val[0]}) * ZOOM, point + ((t_v2i){0, -3} + (t_v2i){0, -val[1]}) * ZOOM, 0xAE80AE);
 			put_line(&(*img), point + ((t_v2i){-5, 0} + (t_v2i){0, -val[0]}) * ZOOM, point + ((t_v2i){0, 3} + (t_v2i){0, -val[2]}) * ZOOM, 0xAE80AE);
+			
 			pos[0]++;
 		}
 		pos[1]++;
 	}
 }
+
+
+
 
 int    main(void)
 {
@@ -283,37 +287,17 @@ int    main(void)
 
 	//init_map(map);
 
-	int map[30][30] = { 
-				{10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-				{10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10}, };
+	int map[10][10] = { 
+				{0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,0,0,0,0},
+				{0,0,0,0,0,0,0,0,0,0},};
 
 	mlx = mlx_init();
 	mlx_win = mlx_new_window(mlx, 1080, 1080, "fdf");
@@ -323,10 +307,7 @@ int    main(void)
 
 
 
-	
-
 	//draw_grid_rotated(&img, 10, (t_v2i){600, 600}, (t_v2i){500, 300});
-	
 
 
 
